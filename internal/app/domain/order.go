@@ -24,11 +24,13 @@ type Order struct {
 }
 
 type OrderService interface {
-	GetByUID(context.Context, int) (*Order, error)
+	GetByUID(context.Context, string) (*Order, error)
 	StoreOrder(context.Context, *Order) (string, error)
+	LoadOrderCache(ctx context.Context) error
 }
 
 type OrderRepository interface {
-	Get(context.Context, int) (*Order, error)
+	Get(context.Context, string) (*Order, error)
 	Store(context.Context, *Order) (string, error)
+	All(context.Context) ([]*Order, error)
 }

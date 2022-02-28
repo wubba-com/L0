@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgconn"
 	"github.com/wubba-com/L0/internal/app/domain"
-	"github.com/wubba-com/L0/pkg/pg"
+	"github.com/wubba-com/L0/pkg/client/pg"
 )
 
 func NewOrderRepository(client pg.Client) domain.OrderRepository {
@@ -16,7 +16,7 @@ type repository struct {
 	p pg.Client
 }
 
-func (r repository) Get(ctx context.Context, id int) (*domain.Order, error) {
+func (r *repository) Get(ctx context.Context, id string) (*domain.Order, error) {
 	order := &domain.Order{}
 
 	query := `SELECT * FROM orders WHERE order_uid = $1`
@@ -29,7 +29,11 @@ func (r repository) Get(ctx context.Context, id int) (*domain.Order, error) {
 	return order, nil
 }
 
-func (r repository) Store(ctx context.Context, order *domain.Order) (string, error) {
+func (r *repository) All(ctx context.Context) ([]*domain.Order, error) {
+	panic("not implement interface")
+}
+
+func (r *repository) Store(ctx context.Context, order *domain.Order) (string, error) {
 	var orderUID string
 	query := `INSERT INTO orders 
 		(
