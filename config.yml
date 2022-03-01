@@ -1,6 +1,13 @@
-storage:
-  host: localhost
+listen:
+  bind_ip: localhost
+  port: 3000
+nats:
+  cluster_id:
+  client_id:
+  channel:
+db:
+  host: 127.0.0.1
   port: 5432
   username: postgres
   password: Ise8866#
-  database: testdb
+  name: testdb

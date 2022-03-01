@@ -1,4 +1,4 @@
-package nats
+package nats_order
 
 import (
 	"context"
@@ -8,11 +8,15 @@ import (
 	"log"
 )
 
-type Handler struct {
+func NewOrderHandler(service domain.OrderService) *handler {
+	return &handler{s: service}
+}
+
+type handler struct {
 	s domain.OrderService
 }
 
-func (h *Handler) StoreOrder(m *stan.Msg) {
+func (h *handler) StoreOrder(m *stan.Msg) {
 	order := &domain.Order{}
 	ctx := context.Background()
 
@@ -42,5 +46,3 @@ func (h *Handler) StoreOrder(m *stan.Msg) {
 
 	log.Printf("OrderUUID: %s", uid)
 }
-
-

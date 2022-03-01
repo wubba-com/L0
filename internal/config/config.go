@@ -4,30 +4,28 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"sync"
-
 )
 
-const(
+const (
 	config = "config.yml"
 )
 
 type Config struct {
-	Listen struct{
-		Port string `yaml:"port"`
+	Listen struct {
+		Port   string `yaml:"port"`
 		BindIP string `yaml:"bind_ip"`
 	} `yaml:"listen"`
-	Nats struct{
+	Nats struct {
 		ClusterID string `yaml:"cluster_id"`
-		ClientID string `yaml:"client_id"`
-		Channel string `yaml:"channel"`
+		ClientID  string `yaml:"client_id"`
+		Channel   string `yaml:"channel"`
 	} `yaml:"nats"`
-	DB struct{
+	DB struct {
 		Username string `yaml:"username"`
 		Password string `yaml:"password"`
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
-		Name string `yaml:"db"`
-		MaxAttempts int `yaml:"max_attempts"`
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		Name     string `yaml:"name"`
 	} `yaml:"db"`
 }
 

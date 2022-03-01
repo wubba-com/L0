@@ -1,13 +1,14 @@
-package http
+package http_order
 
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/wubba-com/L0/internal/app/domain"
+	"log"
 	"net/http"
 )
 
-func NewHandlerOrder(service domain.OrderService) Handler {
+func NewOrderHandler(service domain.OrderService) Handler {
 	return &handlerOrder{service}
 }
 
@@ -34,10 +35,12 @@ func (h *handlerOrder) get(w http.ResponseWriter, r *http.Request) {
 	uidOrder := chi.URLParam(r, "order_uid")
 	order, err := h.s.GetByUID(r.Context(), uidOrder)
 	if err != nil {
+		log.Printf("err:%s", err.Error())
 		return
 	}
 	err = json.NewEncoder(w).Encode(order)
 	if err != nil {
+		log.Printf("err:%s", err.Error())
 		return
 	}
 }
@@ -46,11 +49,13 @@ func (h *handlerOrder) store(w http.ResponseWriter, r *http.Request) {
 	order := &domain.Order{}
 	uid, err := h.s.StoreOrder(r.Context(), order)
 	if err != nil {
+		log.Printf("err:%s", err.Error())
 		return
 	}
 
 	err = json.NewEncoder(w).Encode(uid)
 	if err != nil {
+		log.Printf("err:%s", err.Error())
 		return
 	}
 }

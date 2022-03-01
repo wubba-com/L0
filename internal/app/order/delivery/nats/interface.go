@@ -1,4 +1,4 @@
-package nats
+package nats_order
 
 import "github.com/nats-io/stan.go"
 

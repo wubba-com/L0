@@ -10,12 +10,12 @@ import (
 	"path/filepath"
 )
 
-const(
-	channel   = "test"
-	file = "model.json"
+const (
+	channel = "order"
+	file    = "model.json"
 )
 
-func Run()  {
+func main() {
 	order := &domain.Order{}
 	wd, err := os.Getwd()
 	log.Println(wd)
@@ -41,7 +41,7 @@ func Run()  {
 		return
 	}
 
-	sc := nats.NewStanConn("ClusterID", "clientID")
+	sc := nats.NewStanConn("prod", "pub")
 	err = sc.Publish(channel, b)
 	if err != nil {
 		log.Printf("err: %s\n", err.Error())
@@ -53,4 +53,5 @@ func Run()  {
 		log.Printf("err: %s\n", err.Error())
 		return
 	}
+
 }

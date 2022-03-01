@@ -13,24 +13,24 @@ import (
 )
 
 // NewClient - пул бд
-func NewClient(ctx context.Context, config config.Config) (pool *pgxpool.Pool, err error) {
+func NewClient(ctx context.Context, config *config.Config, maxAttempts int) (pool *pgxpool.Pool, err error) {
 	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", config.DB.Username, config.DB.Password, config.DB.Host, config.DB.Port, config.DB.Name)
 	err = utils.DoWithTries(func() error {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
-
+		fmt.Println(dsn)
 		pool, err = pgxpool.Connect(ctx, dsn)
 		if err != nil {
 			log.Print("failed to connect postgresql")
 			return err
 		}
 		return nil
-	}, config.DB.MaxAttempts, 5*time.Second)
+	}, maxAttempts, 3*time.Second)
 	if err != nil {
 		log.Fatal("error do with tries postgresql")
 	}
 
-	return pool, nil
+	return
 }
 
 // Client - для работы с postgres
