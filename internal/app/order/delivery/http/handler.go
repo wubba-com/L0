@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/wubba-com/L0/internal/app/domain"
-	"github.com/wubba-com/L0/internal/app/order/delivery"
 	"net/http"
 )
 
-func NewHandlerOrder(service domain.OrderService) delivery.Handler {
+func NewHandlerOrder(service domain.OrderService) Handler {
 	return &handlerOrder{service}
 }
 

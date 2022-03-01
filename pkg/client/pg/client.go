@@ -12,8 +12,9 @@ import (
 	"time"
 )
 
-func NewClient(ctx context.Context, config cfg.ConfigDB) (pool *pgxpool.Pool, err error) {
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", config.Username, config.Password, config.Host, config.Port, config.DB)
+// NewClient - пул бд
+func NewClient(ctx context.Context, config config.Config) (pool *pgxpool.Pool, err error) {
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", config.DB.Username, config.DB.Password, config.DB.Host, config.DB.Port, config.DB.Name)
 	err = utils.DoWithTries(func() error {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
@@ -24,7 +25,7 @@ func NewClient(ctx context.Context, config cfg.ConfigDB) (pool *pgxpool.Pool, er
 			return err
 		}
 		return nil
-	}, config.MaxAttempts, 5*time.Second)
+	}, config.DB.MaxAttempts, 5*time.Second)
 	if err != nil {
 		log.Fatal("error do with tries postgresql")
 	}
@@ -32,6 +33,7 @@ func NewClient(ctx context.Context, config cfg.ConfigDB) (pool *pgxpool.Pool, er
 	return pool, nil
 }
 
+// Client - для работы с postgres
 type Client interface {
 	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
