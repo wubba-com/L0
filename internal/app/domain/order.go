@@ -6,21 +6,21 @@ import (
 )
 
 type Order struct {
-	OrderUID          string    `json:"order_uid,omitempty"`
-	TrackNumber       string    `json:"track_number,omitempty"`
-	Entry             string    `json:"entry,omitempty"`
-	Locale            string    `json:"locale,omitempty"`
-	InternalSignature string    `json:"internal_signature,omitempty"`
-	CustomerID        string    `json:"customer_id,omitempty"`
-	DeliveryService   string    `json:"delivery_service,omitempty"`
-	ShardKey          string    `json:"shardkey,omitempty"`
-	SmID              uint64    `json:"sm_id,omitempty"`
-	DateCreated       time.Time `json:"date_created"`
-	OofShard          string    `json:"oof_shard,omitempty"`
+	OrderUID          string    `json:"order_uid,omitempty" validate:"required"`
+	TrackNumber       string    `json:"track_number,omitempty" validate:"required,max=128"`
+	Entry             string    `json:"entry,omitempty" validate:"required,max=128"`
+	Locale            string    `json:"locale,omitempty" validate:"required,max=128"`
+	InternalSignature string    `json:"internal_signature,omitempty" validate:"max=128"`
+	CustomerID        string    `json:"customer_id,omitempty" validate:"required,max=128"`
+	DeliveryService   string    `json:"delivery_service,omitempty" validate:"required,max=128"`
+	ShardKey          string    `json:"shardkey,omitempty" validate:"required,max=128"`
+	SmID              uint64    `json:"sm_id,omitempty" validate:"required,gt=0"`
+	DateCreated       time.Time `json:"date_created" validate:"required"`
+	OofShard          string    `json:"oof_shard,omitempty" validate:"required,max=128"`
 
 	Delivery *Delivery `json:"delivery"`
 	Payment  *Payment  `json:"payment"`
-	Items    []*Item   `json:"items"`
+	Items    []*Item   `json:"items" validate:"required,dive"`
 }
 
 type OrderService interface {

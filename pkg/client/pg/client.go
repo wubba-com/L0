@@ -21,13 +21,13 @@ func NewClient(ctx context.Context, config *config.Config, maxAttempts int) (poo
 		fmt.Println(dsn)
 		pool, err = pgxpool.Connect(ctx, dsn)
 		if err != nil {
-			log.Print("failed to connect postgresql")
+			log.Printf("failed to connect postgresql: %s", err.Error())
 			return err
 		}
 		return nil
 	}, maxAttempts, 3*time.Second)
 	if err != nil {
-		log.Fatal("error do with tries postgresql")
+		log.Fatalf("error do with tries postgresql: %s", err.Error())
 	}
 
 	return

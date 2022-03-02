@@ -11,6 +11,8 @@ const (
 )
 
 type Config struct {
+	configFile string
+	DataFile string `yaml:"data_file"`
 	Listen struct {
 		Port   string `yaml:"port"`
 		BindIP string `yaml:"bind_ip"`
@@ -40,6 +42,7 @@ func GetConfig() *Config {
 			log.Printf("err: %s\n", err.Error())
 			return
 		}
+		instance.configFile = config
 	})
 
 	return instance

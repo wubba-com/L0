@@ -1,14 +1,14 @@
 package domain
 
 type Payment struct {
-	Transaction  string `json:"transaction,omitempty"`
-	RequestID    string `json:"request_id,omitempty"`
-	Currency     string `json:"currency,omitempty"`
-	Provider     string `json:"provider,omitempty"`
-	Amount       uint64 `json:"amount,omitempty"`
-	PaymentDt    uint64 `json:"payment_dt,omitempty"`
-	Bank         string `json:"bank,omitempty"`
-	DeliveryCost uint64 `json:"delivery_cost,omitempty"`
-	GoodsTotal   uint64 `json:"goods_total,omitempty"`
-	CustomFee    uint64 `json:"custom_fee,omitempty"`
+	Transaction  string `json:"transaction" validate:"required"`
+	RequestID    string `json:"request_id" validate:"omitempty"`
+	Currency     string `json:"currency" validate:"required,max=128"`
+	Provider     string `json:"provider" validate:"required,max=128"`
+	Amount       uint64 `json:"amount" validate:"required,gte=0"`
+	PaymentDt    uint64 `json:"payment_dt" validate:"required,gte=0"`
+	Bank         string `json:"bank" validate:"required,max=64"`
+	DeliveryCost uint64 `json:"delivery_cost" validate:"required,gte=0"`
+	GoodsTotal   uint64 `json:"goods_total" validate:"required,gte=0"`
+	CustomFee    uint64 `json:"custom_fee" validate:"gte=0"`
 }

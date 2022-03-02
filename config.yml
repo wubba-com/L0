@@ -2,12 +2,13 @@ listen:
   bind_ip: localhost
   port: 3000
 nats:
-  cluster_id:
-  client_id:
-  channel:
+  cluster_id: test-cluster
+  client_id: pub
+  channel: order
 db:
   host: 127.0.0.1
   port: 5432
   username: postgres
   password: Ise8866#
   name: testdb
+data_file: model.json

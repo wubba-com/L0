@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/wubba-com/L0/internal/app/domain"
 	"github.com/wubba-com/L0/pkg/client/pg"
+	"log"
 )
 
 func NewOrderRepository(client pg.Client) domain.OrderRepository {
@@ -23,6 +24,7 @@ func (r *repository) Get(ctx context.Context, id string) (*domain.Order, error) 
 
 	err := r.p.QueryRow(ctx, query, id).Scan(order.OrderUID, order.TrackNumber, order.Entry, order.Locale, order.InternalSignature, order.CustomerID, order.DeliveryService, order.ShardKey, order.SmID, order.DateCreated, order.OofShard)
 	if err != nil {
+		log.Printf("[err] repository:%s\n", err.Error())
 		return nil, err
 	}
 
@@ -34,6 +36,8 @@ func (r *repository) All(ctx context.Context) ([]*domain.Order, error) {
 }
 
 func (r *repository) Store(ctx context.Context, order *domain.Order) (string, error) {
+	fmt.Println(order.OrderUID)
+	return "", nil
 	var orderUID string
 	query := `INSERT INTO orders 
 		(

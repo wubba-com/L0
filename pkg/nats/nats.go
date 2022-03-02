@@ -7,9 +7,10 @@ import (
 )
 
 func NewStanConn(clusterID, clientID string) stan.Conn {
+	println(clusterID, clientID)
 	sc, err := stan.Connect(clusterID, clientID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("err: %s", err.Error())
 	}
 
 	return sc

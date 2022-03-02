@@ -1,21 +1,21 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	httpo "github.com/wubba-com/L0/internal/app/order/delivery/http"
 	natso "github.com/wubba-com/L0/internal/app/order/delivery/nats"
-	"github.com/wubba-com/L0/internal/app/order/repository/postgres"
+	"github.com/wubba-com/L0/internal/app/order/repository/file"
 	order "github.com/wubba-com/L0/internal/app/order/service"
 	"github.com/wubba-com/L0/internal/config"
 	cache "github.com/wubba-com/L0/pkg/cache"
-	"github.com/wubba-com/L0/pkg/client/pg"
 	"github.com/wubba-com/L0/pkg/nats"
+	"github.com/wubba-com/L0/pkg/validation"
 	"log"
 	"net/http"
 	"time"
 )
+
 
 func Run() {
 	// init of start vars
@@ -23,7 +23,7 @@ func Run() {
 	DefaultExpiration := 5 * time.Minute
 	CleanupInterval := 10 * time.Minute
 	TTL := 15 * time.Minute
-	MaxAttempts := 3
+	//MaxAttempts := 3
 
 	// init config
 	cfg = config.GetConfig()
@@ -35,29 +35,44 @@ func Run() {
 
 	// init db client
 	log.Println(cfg.DB.Username, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
-	PGSQLClient, err := pg.NewClient(context.TODO(), cfg, MaxAttempts)
-	if err != nil {
-		log.Fatalf("err: %s", err.Error())
-	}
+	//PGSQLClient, err := pg.NewClient(context.TODO(), cfg, MaxAttempts)
+	//if err != nil {
+	//	log.Fatalf("err: %s", err.Error())
+	//}
 
 	// init cache
 	cacheLocal := cache.NewCache(DefaultExpiration, CleanupInterval)
 	log.Printf("init cache")
 
+	v := validation.NewValidater()
+
 	// init order of handler, service, repository
-	r := postgres.NewOrderRepository(PGSQLClient)
+	//r := postgres.NewOrderRepository(PGSQLClient)
+	r := file.NewOrderRepository()
 	s := order.NewOrderService(r, cacheLocal, TTL)
-	h := httpo.NewOrderHandler(s)
+	//err := s.LoadOrderCache(context.Background())
+	//if err != nil {
+	//	log.Printf("err run load cache: %s", err.Error())
+	//	return
+	//}
+	
+	h := httpo.NewOrderHandler(s, v)
 
 	// init http handlers
 	h.Register(router)
 
 	// init nats handler
-	n := natso.NewOrderHandler(s)
+	n := natso.NewOrderHandler(s, v)
+
+	// init nats-streaming connection
 	sc := nats.NewStanConn(cfg.Nats.ClusterID, cfg.Nats.ClientID)
+	// close nats connect
+	defer sc.Close()
 
 	// init nats-streaming subscriber
-	nats.NewSubscriber(sc, cfg.Nats.Channel, n.StoreOrder)
+	subscription := nats.NewSubscriber(sc, cfg.Nats.Channel, n.StoreOrder)
+	// unsubscribe removes subscription
+	defer subscription.Unsubscribe()
 
 	// init listen http host
 	listen := fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port)
@@ -66,5 +81,4 @@ func Run() {
 	// start server
 	log.Printf("init server")
 	log.Fatal(http.ListenAndServe(listen, router))
-
 }
