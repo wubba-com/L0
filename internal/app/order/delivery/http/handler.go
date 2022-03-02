@@ -2,6 +2,7 @@ package http_order
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/wubba-com/L0/internal/app/domain"
 	"github.com/wubba-com/L0/pkg/validation"
@@ -23,18 +24,30 @@ type handlerOrder struct {
 }
 
 func (h *handlerOrder) Register(r chi.Router) {
+
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/orders", func(r chi.Router) {
-				r.Get("/{order_uid:[a-z]}", h.get)
+				r.Get("/", h.welcome)
+				r.Get("/{order_uid}", h.get)
 				r.Post(endPoint, h.store)
 			})
 		})
 	})
 }
 
+func (h *handlerOrder) welcome(w http.ResponseWriter, r *http.Request) {
+	err := json.NewEncoder(w).Encode(r.URL.Path)
+	if err != nil {
+		log.Printf("err http handler:%s\n", err.Error())
+		return
+	}
+}
+
 func (h *handlerOrder) get(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.Path)
 	uidOrder := chi.URLParam(r, "order_uid")
+	fmt.Println("uidOrder", uidOrder)
 	order, err := h.s.GetByUID(r.Context(), uidOrder)
 	if err != nil {
 		log.Printf("err http handler:%s\n", err.Error())

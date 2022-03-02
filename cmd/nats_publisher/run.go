@@ -11,10 +11,9 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"time"
 )
 
-const(
+const (
 	clientID = "test"
 )
 
@@ -57,7 +56,7 @@ func main() {
 			return
 		}
 
-		if i % 2 == 0 {
+		if i%2 == 0 {
 			badJson := `{"ID":"test123", "fields":"lalala"}`
 			err = sc.Publish(cfg.Nats.Channel, []byte(badJson))
 			if err != nil {
@@ -71,7 +70,7 @@ func main() {
 			log.Printf("[err] nats-pub: %s\n", err.Error())
 			return
 		}
-		time.Sleep(1*time.Second)
+		//time.Sleep(1 * time.Second)
 	}
 
 	err = sc.Close()
@@ -84,15 +83,18 @@ func main() {
 // GenerateOrders generates orders
 func GenerateOrders(countOrders int, order domain.Order) []*domain.Order {
 	orders := make([]*domain.Order, 0)
-	sec := rand.New(rand.NewSource(10))
-	r := rand.New(rand.NewSource(10))
+
 	for countOrders > 0 {
 		o := order
-		randInt := sec.Int()
-		o.OrderUID = fmt.Sprintf("test-%d", randInt)
+		randInt := rand.Int()
+		fmt.Println("randInt", randInt)
+
+		o.OrderUID = fmt.Sprintf("uid-%d", randInt)
 		o.Payment.Transaction = fmt.Sprintf("test-%d", randInt)
 		for _, item := range order.Items {
-			item.ChrtID = r.Uint64()
+			id := rand.Uint64()
+			fmt.Println("id", id)
+			item.ChrtID = id
 		}
 		orders = append(orders, &o)
 		countOrders--

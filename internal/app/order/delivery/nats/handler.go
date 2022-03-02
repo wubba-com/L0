@@ -34,7 +34,7 @@ func (h *handler) StoreOrder(msg *stan.Msg) {
 		}
 		return
 	}
-	println(order)
+
 	err = h.v.Struct(order)
 	if err != nil {
 		log.Printf("[err] validate: %s\n", err.Error())

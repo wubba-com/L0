@@ -46,13 +46,12 @@ func (s *service) GetByUID(ctx context.Context, uid string) (*domain.Order, erro
 
 func (s *service) StoreOrder(ctx context.Context, order *domain.Order) (string, error) {
 	uid, err := s.r.Store(ctx, order)
-	if err == nil {
-		s.c.Set(order.OrderUID, order, s.ttlCache)
-	}
-
 	if err != nil {
 		log.Printf("[err] service:%s\n", err.Error())
 		return "", err
+	}
+	if err == nil {
+		s.c.Set(order.OrderUID, order, s.ttlCache)
 	}
 
 	return uid, nil

@@ -7,10 +7,9 @@ import (
 )
 
 func NewStanConn(clusterID, clientID string) stan.Conn {
-	println(clusterID, clientID)
 	sc, err := stan.Connect(clusterID, clientID)
 	if err != nil {
-		log.Fatalf("err: %s", err.Error())
+		log.Fatalf("[err] stan-streaming connect: %s\n", err.Error())
 	}
 
 	return sc
@@ -19,7 +18,7 @@ func NewStanConn(clusterID, clientID string) stan.Conn {
 func NewSubscriber(sc stan.Conn, channel string, f nats_order.FuncNats) stan.Subscription {
 	sub, err := sc.Subscribe(channel, stan.MsgHandler(f), stan.DurableName("durable-name"), stan.SetManualAckMode())
 	if err != nil {
-		log.Fatalf("err: %s", err.Error())
+		log.Fatalf("[err] stan-streaming subscription: %s\n", err.Error())
 		return nil
 	}
 

@@ -18,7 +18,6 @@ func NewClient(ctx context.Context, config *config.Config, maxAttempts int) (poo
 	err = utils.DoWithTries(func() error {
 		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
-		fmt.Println(dsn)
 		pool, err = pgxpool.Connect(ctx, dsn)
 		if err != nil {
 			log.Printf("failed to connect postgresql: %s", err.Error())
@@ -30,7 +29,7 @@ func NewClient(ctx context.Context, config *config.Config, maxAttempts int) (poo
 		log.Fatalf("error do with tries postgresql: %s", err.Error())
 	}
 
-	return
+	return pool, nil
 }
 
 // Client - для работы с postgres
