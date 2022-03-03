@@ -13,8 +13,6 @@ type Payment struct {
 	DeliveryCost uint64 `json:"delivery_cost" validate:"required,gte=0"`
 	GoodsTotal   uint64 `json:"goods_total" validate:"required,gte=0"`
 	CustomFee    uint64 `json:"custom_fee" validate:"gte=0"`
-
-	OrderUID string `validate:"required"`
 }
 
 type PaymentRepository interface {

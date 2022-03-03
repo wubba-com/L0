@@ -8,23 +8,23 @@ import (
 	"github.com/wubba-com/L0/pkg/client/pg"
 )
 
-const(
+const (
 	table = "items"
 )
 
 func NewItemRepository(client pg.Client) domain.ItemRepository {
-	return &itemRepo{p: client}
+	return &itemRepo{db: client}
 }
 
 type itemRepo struct {
-	p pg.Client
+	db pg.Client
 }
 
 func (i *itemRepo) GetByOrderUID(ctx context.Context, orderUID string) ([]*domain.Item, error) {
 	query := fmt.Sprintf("SELECT chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status FROM %s WHERE order_uid = $1", table)
 	items := make([]*domain.Item, 0)
 
-	rows, err := i.p.Query(ctx, query, &orderUID)
+	rows, err := i.db.Query(ctx, query, &orderUID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func (i *itemRepo) GetByOrderUID(ctx context.Context, orderUID string) ([]*domai
 			&item.NmID,
 			&item.Brand,
 			&item.Status,
-			); err != nil {
-				return nil, err
+		); err != nil {
+			return nil, err
 		}
 
 		items = append(items, item)
@@ -56,7 +56,7 @@ func (i *itemRepo) GetByOrderUID(ctx context.Context, orderUID string) ([]*domai
 func (i *itemRepo) Store(ctx context.Context, item *domain.Item) (uint64, error) {
 	var ChrtID uint64
 	var query = fmt.Sprintf("INSERT INTO %s (chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status, order_uid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING chrt_id", table)
-	if err := i.p.QueryRow(
+	if err := i.db.QueryRow(
 		ctx,
 		query,
 		&item.ChrtID,
@@ -71,14 +71,14 @@ func (i *itemRepo) Store(ctx context.Context, item *domain.Item) (uint64, error)
 		&item.Brand,
 		&item.Status,
 		&item.OrderUID,
-		).Scan(&ChrtID); err != nil {
-			if pgError, ok := err.(*pgconn.PgError); ok {
-				fmt.Println(fmt.Errorf("SQL: Error: %s, Detail:%s, Where: %s, Code:%s", pgError.Message, pgError.Detail, pgError.Where, pgError.Code))
-				return 0, err
-			}
+	).Scan(&ChrtID); err != nil {
+		if pgError, ok := err.(*pgconn.PgError); ok {
+			fmt.Println(fmt.Errorf("SQL item: Error: %s, Detail:%s, Where: %s, Code:%s", pgError.Message, pgError.Detail, pgError.Where, pgError.Code))
+			return 0, err
+		}
 
 		return 0, err
 	}
 
-	return  ChrtID, nil
+	return ChrtID, nil
 }

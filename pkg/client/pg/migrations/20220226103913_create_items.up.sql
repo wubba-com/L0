@@ -1,5 +1,5 @@
 CREATE TABLE items (
-    chrt_id      bigint PRIMARY KEY NOT NULL,
+    chrt_id      bigint PRIMARY KEY UNIQUE NOT NULL,
     track_number varchar(256)       NOT NULL,
     price        bigint             NOT NULL,
     rid          varchar,
@@ -12,5 +12,5 @@ CREATE TABLE items (
     status       int                NOT NULL,
 
     order_uid    varchar            NOT NULL,
-    FOREIGN KEY (order_uid) REFERENCES orders (order_uid)
+    CONSTRAINT fk_order FOREIGN KEY (order_uid) REFERENCES orders (order_uid)
 );

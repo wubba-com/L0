@@ -1,6 +1,6 @@
 CREATE TABLE deliveries (
     delivery_uid serial PRIMARY KEY UNIQUE NOT NULL,
-    order_uid varchar      NOT NULL,
+    order_uid varchar NOT NULL,
     name      varchar(128) NOT NULL,
     phone     varchar(16)  NOT NULL,
     zip       varchar(128) NOT NULL,
@@ -10,5 +10,5 @@ CREATE TABLE deliveries (
     email     varchar(128) NOT NULL,
 
     UNIQUE (order_uid),
-    CONSTRAINT fk_order FOREIGN KEY (order_uid) REFERENCES orders (order_uid) ON DELETE CASCADE
+    CONSTRAINT fk_order FOREIGN KEY (order_uid) REFERENCES orders (order_uid)
 );

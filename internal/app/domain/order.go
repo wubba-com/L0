@@ -25,13 +25,13 @@ type Order struct {
 
 type OrderService interface {
 	GetByUID(context.Context, string) (*Order, error)
-	AllOrders(ctx context.Context) ([]*Order, error)
 	StoreOrder(context.Context, *Order) (string, error)
-	LoadOrderCache(ctx context.Context) error
+	LoadOrderCache(ctx context.Context) ([]*Order, error)
 }
 
 type OrderRepository interface {
 	Get(context.Context, string) (*Order, error)
 	Store(context.Context, *Order) (string, error)
 	All(context.Context) ([]*Order, error)
+	CheckUnique(context.Context, string) error
 }

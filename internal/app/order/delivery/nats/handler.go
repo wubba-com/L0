@@ -8,6 +8,7 @@ import (
 	"github.com/wubba-com/L0/internal/app/domain"
 	"github.com/wubba-com/L0/pkg/validation"
 	"log"
+	"sync"
 )
 
 func NewOrderHandler(orderS domain.OrderService, deliveryS domain.DeliveryService, paymentS domain.PaymentService, itemS domain.ItemService, validater validation.Validater) *handler {
@@ -24,17 +25,25 @@ type handler struct {
 
 func (h *handler) StoreOrder(msg *stan.Msg) {
 	order := &domain.Order{}
-
+	wg := sync.WaitGroup{}
 	err := json.Unmarshal(msg.Data, order)
 	if err != nil {
-		log.Printf("[err] nats handler: %s\n", err.Error())
+		log.Printf("[err] nats handler json %s\n", err.Error())
 
 		err = msg.Ack()
 		if err != nil {
-			log.Printf("[err] nats handler: %s\n", err.Error())
+			log.Printf("[err] nats handler ask: %s\n", err.Error())
 			return
 		}
 		return
+	}
+
+	order.Payment.Transaction = order.OrderUID
+	order.Delivery.OrderUID = order.OrderUID
+
+	for _, item := range order.Items {
+		fmt.Println(item.ChrtID)
+		item.OrderUID = order.OrderUID
 	}
 
 	err = h.v.Struct(order)
@@ -81,7 +90,9 @@ func (h *handler) StoreOrder(msg *stan.Msg) {
 		return
 	}
 	for _, item := range order.Items {
+		wg.Add(1)
 		go func(item *domain.Item) {
+			defer wg.Done()
 			_, err = h.i.StoreItem(context.Background(), item)
 			if err != nil {
 				log.Printf("[err] nats handler: %s\n", err.Error())
@@ -95,6 +106,7 @@ func (h *handler) StoreOrder(msg *stan.Msg) {
 			}
 		}(item)
 	}
+	wg.Wait()
 	err = msg.Ack()
 	if err != nil {
 		log.Printf("[err] failed ACK msg: %d\n", msg.Sequence)

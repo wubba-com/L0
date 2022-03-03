@@ -12,9 +12,18 @@ func NewPaymentService(repository domain.PaymentRepository, cache cache.Cache, t
 }
 
 type servicePayment struct {
-	r domain.PaymentRepository
-	c cache.Cache
+	r        domain.PaymentRepository
+	c        cache.Cache
 	ttlCache time.Duration
+}
+
+func (s *servicePayment) GetPaymentByOrderUID(ctx context.Context, orderUID string) (*domain.Payment, error) {
+	payment, err := s.r.GetByOrderUID(ctx, orderUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return payment, nil
 }
 
 func (s *servicePayment) StorePayment(ctx context.Context, payment *domain.Payment) (string, error) {
@@ -27,4 +36,3 @@ func (s *servicePayment) StorePayment(ctx context.Context, payment *domain.Payme
 
 	return uid, err
 }
-

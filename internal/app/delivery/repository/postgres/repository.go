@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-const(
+const (
 	table = "deliveries"
 )
 
@@ -27,16 +27,16 @@ func (d *deliveryRepo) GetByOrderUID(ctx context.Context, orderUID string) (*dom
 
 	if err := d.db.QueryRow(
 		ctx, query, orderUID).Scan(
-			&delivery.DeliveryUID,
-			&delivery.OrderUID,
-			&delivery.Name,
-			&delivery.Phone,
-			&delivery.Zip,
-			&delivery.City,
-			&delivery.Address,
-			&delivery.Region,
-			&delivery.Email,
-		); err != nil {
+		&delivery.DeliveryUID,
+		&delivery.OrderUID,
+		&delivery.Name,
+		&delivery.Phone,
+		&delivery.Zip,
+		&delivery.City,
+		&delivery.Address,
+		&delivery.Region,
+		&delivery.Email,
+	); err != nil {
 		return nil, err
 	}
 
@@ -45,7 +45,7 @@ func (d *deliveryRepo) GetByOrderUID(ctx context.Context, orderUID string) (*dom
 
 func (d *deliveryRepo) Store(ctx context.Context, delivery *domain.Delivery) (uint64, error) {
 	var deliveryUID uint64
-	query := fmt.Sprintf("INSERT INTO deliveries (order_uid, name, phone, zip, city, address, region, email) VALUES ($1, $2, $3, $4, $5, $6, $6, $7, $8) RETURNING delivery_id")
+	query := fmt.Sprintf("INSERT INTO deliveries (order_uid, name, phone, zip, city, address, region, email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING delivery_uid")
 	if err := d.db.QueryRow(
 		ctx,
 		query,
@@ -59,7 +59,7 @@ func (d *deliveryRepo) Store(ctx context.Context, delivery *domain.Delivery) (ui
 		&delivery.Email,
 	).Scan(&deliveryUID); err != nil {
 		if pgError, ok := err.(*pgconn.PgError); ok {
-			fmt.Println(fmt.Errorf("SQL: Error: %s, Detail:%s, Where: %s, Code:%s", pgError.Message, pgError.Detail, pgError.Where, pgError.Code))
+			fmt.Println(fmt.Errorf("SQL delivery: Error: %s, Detail:%s, Where: %s, Code:%s", pgError.Message, pgError.Detail, pgError.Where, pgError.Code))
 			return 0, err
 		}
 		log.Printf("[err] db: %s\n", err.Error())

@@ -4,11 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	postgres2 "github.com/wubba-com/L0/internal/app/delivery/repository/postgres"
+	"github.com/wubba-com/L0/internal/app/delivery/service"
+	postgres4 "github.com/wubba-com/L0/internal/app/item/repository/postgres"
+	service3 "github.com/wubba-com/L0/internal/app/item/service"
 	httpo "github.com/wubba-com/L0/internal/app/order/delivery/http"
 	natso "github.com/wubba-com/L0/internal/app/order/delivery/nats"
-	_ "github.com/wubba-com/L0/internal/app/order/repository/file"
 	"github.com/wubba-com/L0/internal/app/order/repository/postgres"
 	order "github.com/wubba-com/L0/internal/app/order/service"
+	postgres3 "github.com/wubba-com/L0/internal/app/payment/repository/postgres"
+	service2 "github.com/wubba-com/L0/internal/app/payment/service"
 	"github.com/wubba-com/L0/internal/config"
 	cache "github.com/wubba-com/L0/pkg/cache"
 	"github.com/wubba-com/L0/pkg/client/pg"
@@ -49,22 +54,29 @@ func Run() {
 	v := validation.NewValidater()
 
 	// init order of handler, service, repository
-	r := postgres.NewOrderRepository(PGSQLClient)
-	//r := file.NewOrderRepository()
-	s := order.NewOrderService(r, cacheLocal, TTL)
-	//err := s.LoadOrderCache(context.Background())
-	//if err != nil {
-	//	log.Printf("err run load cache: %s", err.Error())
-	//	return
-	//}
+	orderRepo := postgres.NewOrderRepository(PGSQLClient)
+	deliveryRepo := postgres2.NewDeliveryRepository(PGSQLClient)
+	paymentRepo := postgres3.NewPaymentRepository(PGSQLClient)
+	itemRepo := postgres4.NewItemRepository(PGSQLClient)
 
-	h := httpo.NewOrderHandler(s, v)
+	orderSer := order.NewOrderService(orderRepo, cacheLocal, TTL)
+	deliverySer := service.NewDeliveryService(deliveryRepo, cacheLocal, TTL)
+	paymentSer := service2.NewPaymentService(paymentRepo, cacheLocal, TTL)
+	itemSer := service3.NewItemService(itemRepo, cacheLocal, TTL)
+
+	_, err = orderSer.LoadOrderCache(context.Background())
+	if err != nil {
+		log.Printf("err run load cache: %s", err.Error())
+		return
+	}
+
+	h := httpo.NewOrderHandler(orderSer, deliverySer, paymentSer, itemSer, v)
 
 	// init http handlers
 	h.Register(router)
 
 	// init nats handler
-	n := natso.NewOrderHandler(s, v)
+	n := natso.NewOrderHandler(orderSer, deliverySer, paymentSer, itemSer, v)
 
 	// init nats-streaming connection
 	sc := nats.NewStanConn(cfg.Nats.ClusterID, cfg.Nats.ClientID)

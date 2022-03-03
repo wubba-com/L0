@@ -48,22 +48,28 @@ func main() {
 
 	// generate count orders
 	orders := GenerateOrders(12, *order)
-	fmt.Println("order: ", len(orders), orders[0].OrderUID, orders[0].CustomerID)
-	for i, order := range orders {
+	fmt.Println("order: ", len(orders), orders[0].OrderUID, orders[0].CustomerID, order.Delivery.Name)
+	for _, order := range orders {
+
+		for _, item := range order.Items {
+			uid := rand.Uint32()
+			item.ChrtID = uint64(uid)
+		}
+		fmt.Println("ChID:", order.Items[0].ChrtID)
 		b, err := json.Marshal(order)
 		if err != nil {
 			log.Printf("[err] nats-pub: %s\n", err.Error())
 			return
 		}
 
-		if i%2 == 0 {
-			badJson := `{"ID":"test123", "fields":"lalala"}`
-			err = sc.Publish(cfg.Nats.Channel, []byte(badJson))
-			if err != nil {
-				log.Printf("[err] nats-pub: %s\n", err.Error())
-				return
-			}
-		}
+		//if i%2 == 0 {
+		//	badJson := `{"ID":"test123", "fields":"lalala"}`
+		//	err = sc.Publish(cfg.Nats.Channel, []byte(badJson))
+		//	if err != nil {
+		//		log.Printf("[err] nats-pub: %s\n", err.Error())
+		//		return
+		//	}
+		//}
 
 		err = sc.Publish(cfg.Nats.Channel, b)
 		if err != nil {
@@ -86,16 +92,9 @@ func GenerateOrders(countOrders int, order domain.Order) []*domain.Order {
 
 	for countOrders > 0 {
 		o := order
-		randInt := rand.Int()
-		fmt.Println("randInt", randInt)
+		randInt := fmt.Sprintf("uid-%d", rand.Int())
+		o.OrderUID = randInt
 
-		o.OrderUID = fmt.Sprintf("uid-%d", randInt)
-		o.Payment.Transaction = fmt.Sprintf("test-%d", randInt)
-		for _, item := range order.Items {
-			id := rand.Uint64()
-			fmt.Println("id", id)
-			item.ChrtID = id
-		}
 		orders = append(orders, &o)
 		countOrders--
 	}

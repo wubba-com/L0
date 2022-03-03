@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/wubba-com/L0/internal/app/domain"
 	"github.com/wubba-com/L0/pkg/cache"
-	"log"
 	"time"
 )
 
@@ -18,25 +17,15 @@ type serviceOrder struct {
 	ttlCache time.Duration
 }
 
-func (s *serviceOrder) AllOrders(ctx context.Context) ([]*domain.Order, error) {
+func (s *serviceOrder) LoadOrderCache(ctx context.Context) ([]*domain.Order, error) {
 	orders, err := s.r.All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	return orders, nil
-}
-
-func (s *serviceOrder) LoadOrderCache(ctx context.Context) error {
-	orders, err := s.r.All(ctx)
-	if err != nil {
-		log.Printf("[err] service:%s\n", err.Error())
-		return err
-	}
 	for _, order := range orders {
 		s.c.Set(order.OrderUID, order, s.ttlCache)
 	}
-	return nil
+	return orders, nil
 }
 
 func (s *serviceOrder) GetByUID(ctx context.Context, uid string) (*domain.Order, error) {
@@ -44,11 +33,10 @@ func (s *serviceOrder) GetByUID(ctx context.Context, uid string) (*domain.Order,
 		return order.(*domain.Order), nil
 	}
 	order, err := s.r.Get(ctx, uid)
-	s.c.Set(order.OrderUID, order, s.ttlCache)
 	if err != nil {
-		log.Printf("[err] service:%s\n", err.Error())
 		return nil, err
 	}
+	s.c.Set(order.OrderUID, order, s.ttlCache)
 
 	return order, nil
 }
@@ -56,10 +44,8 @@ func (s *serviceOrder) GetByUID(ctx context.Context, uid string) (*domain.Order,
 func (s *serviceOrder) StoreOrder(ctx context.Context, order *domain.Order) (string, error) {
 	uid, err := s.r.Store(ctx, order)
 	if err != nil {
-		log.Printf("[err] service:%s\n", err.Error())
 		return "", err
 	}
-
 	s.c.Set(uid, order, s.ttlCache)
 
 	return uid, nil
