@@ -1,5 +1,7 @@
 package domain
 
+import "context"
+
 type Payment struct {
 	Transaction  string `json:"transaction" validate:"required"`
 	RequestID    string `json:"request_id" validate:"omitempty"`
@@ -11,4 +13,16 @@ type Payment struct {
 	DeliveryCost uint64 `json:"delivery_cost" validate:"required,gte=0"`
 	GoodsTotal   uint64 `json:"goods_total" validate:"required,gte=0"`
 	CustomFee    uint64 `json:"custom_fee" validate:"gte=0"`
+
+	OrderUID string `validate:"required"`
+}
+
+type PaymentRepository interface {
+	GetByOrderUID(context.Context, string) (*Payment, error)
+	Store(context.Context, *Payment) (string, error)
+}
+
+type PaymentService interface {
+	GetPaymentByOrderUID(context.Context, string) (*Payment, error)
+	StorePayment(context.Context, *Payment) (string, error)
 }

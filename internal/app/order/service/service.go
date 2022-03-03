@@ -9,16 +9,25 @@ import (
 )
 
 func NewOrderService(repository domain.OrderRepository, c cache.Cache, ttl time.Duration) domain.OrderService {
-	return &service{r: repository, c: c, ttlCache: ttl}
+	return &serviceOrder{r: repository, c: c, ttlCache: ttl}
 }
 
-type service struct {
+type serviceOrder struct {
 	r        domain.OrderRepository
 	c        cache.Cache
 	ttlCache time.Duration
 }
 
-func (s *service) LoadOrderCache(ctx context.Context) error {
+func (s *serviceOrder) AllOrders(ctx context.Context) ([]*domain.Order, error) {
+	orders, err := s.r.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func (s *serviceOrder) LoadOrderCache(ctx context.Context) error {
 	orders, err := s.r.All(ctx)
 	if err != nil {
 		log.Printf("[err] service:%s\n", err.Error())
@@ -30,7 +39,7 @@ func (s *service) LoadOrderCache(ctx context.Context) error {
 	return nil
 }
 
-func (s *service) GetByUID(ctx context.Context, uid string) (*domain.Order, error) {
+func (s *serviceOrder) GetByUID(ctx context.Context, uid string) (*domain.Order, error) {
 	if order, found := s.c.Get(uid); found {
 		return order.(*domain.Order), nil
 	}
@@ -44,15 +53,14 @@ func (s *service) GetByUID(ctx context.Context, uid string) (*domain.Order, erro
 	return order, nil
 }
 
-func (s *service) StoreOrder(ctx context.Context, order *domain.Order) (string, error) {
+func (s *serviceOrder) StoreOrder(ctx context.Context, order *domain.Order) (string, error) {
 	uid, err := s.r.Store(ctx, order)
 	if err != nil {
 		log.Printf("[err] service:%s\n", err.Error())
 		return "", err
 	}
-	if err == nil {
-		s.c.Set(order.OrderUID, order, s.ttlCache)
-	}
+
+	s.c.Set(uid, order, s.ttlCache)
 
 	return uid, nil
 }

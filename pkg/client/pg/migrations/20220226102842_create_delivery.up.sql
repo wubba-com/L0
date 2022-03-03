@@ -1,4 +1,5 @@
 CREATE TABLE deliveries (
+    delivery_uid serial PRIMARY KEY UNIQUE NOT NULL,
     order_uid varchar      NOT NULL,
     name      varchar(128) NOT NULL,
     phone     varchar(16)  NOT NULL,

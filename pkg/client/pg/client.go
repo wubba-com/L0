@@ -28,7 +28,7 @@ func NewClient(ctx context.Context, config *config.Config, maxAttempts int) (poo
 	if err != nil {
 		log.Fatalf("error do with tries postgresql: %s", err.Error())
 	}
-
+	defer pool.Close()
 	return pool, nil
 }
 

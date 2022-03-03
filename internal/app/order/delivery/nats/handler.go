@@ -10,18 +10,20 @@ import (
 	"log"
 )
 
-func NewOrderHandler(service domain.OrderService, validater validation.Validater) *handler {
-	return &handler{s: service, v: validater}
+func NewOrderHandler(orderS domain.OrderService, deliveryS domain.DeliveryService, paymentS domain.PaymentService, itemS domain.ItemService, validater validation.Validater) *handler {
+	return &handler{o: orderS, d: deliveryS, p: paymentS, i: itemS, v: validater}
 }
 
 type handler struct {
-	s domain.OrderService
+	o domain.OrderService
+	d domain.DeliveryService
+	p domain.PaymentService
+	i domain.ItemService
 	v validation.Validater
 }
 
 func (h *handler) StoreOrder(msg *stan.Msg) {
 	order := &domain.Order{}
-	ctx := context.Background()
 
 	err := json.Unmarshal(msg.Data, order)
 	if err != nil {
@@ -45,7 +47,7 @@ func (h *handler) StoreOrder(msg *stan.Msg) {
 		}
 		return
 	}
-	uid, err := h.s.StoreOrder(ctx, order)
+	uid, err := h.o.StoreOrder(context.Background(), order)
 	if err != nil {
 		log.Printf("[err] nats handler: %s\n", err.Error())
 
@@ -55,6 +57,43 @@ func (h *handler) StoreOrder(msg *stan.Msg) {
 			return
 		}
 		return
+	}
+	_, err = h.d.StoreDelivery(context.Background(), order.Delivery)
+	if err != nil {
+		log.Printf("[err] nats handler: %s\n", err.Error())
+
+		err = msg.Ack()
+		if err != nil {
+			log.Printf("[err] nats handler: %s\n", err.Error())
+			return
+		}
+		return
+	}
+	_, err = h.p.StorePayment(context.Background(), order.Payment)
+	if err != nil {
+		log.Printf("[err] nats handler: %s\n", err.Error())
+
+		err = msg.Ack()
+		if err != nil {
+			log.Printf("[err] nats handler: %s\n", err.Error())
+			return
+		}
+		return
+	}
+	for _, item := range order.Items {
+		go func(item *domain.Item) {
+			_, err = h.i.StoreItem(context.Background(), item)
+			if err != nil {
+				log.Printf("[err] nats handler: %s\n", err.Error())
+
+				err = msg.Ack()
+				if err != nil {
+					log.Printf("[err] nats handler: %s\n", err.Error())
+					return
+				}
+				return
+			}
+		}(item)
 	}
 	err = msg.Ack()
 	if err != nil {
