@@ -34,7 +34,7 @@ func (h *handlerOrder) Register(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/orders", func(r chi.Router) {
 				r.Get("/", h.list)
-				r.Get("/{order_uid}", h.get)
+				r.Get("/{order_uid:[a-z0-9]}", h.get)
 			})
 		})
 	})
@@ -47,7 +47,7 @@ func (h *handlerOrder) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orders, err := h.o.LoadOrderCache(r.Context())
+	orders, err := h.o.All(r.Context())
 	if err != nil {
 		err = tmpl.Execute(w, err)
 		if err != nil {

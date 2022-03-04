@@ -13,15 +13,16 @@
 <body>
 <div class="container">
     <div class="row mt-3">
+        {{range .orders}}
         <div class="col-xl-3">
             <div class="card" style="width: 18rem;">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Заголовок карточки</h5>
-                    <p class="card-text">Небольшой пример текста, который должен основываться на названии карточки и составлять основную часть содержимого карты.</p>
-                    <a href="#" class="btn btn-primary ">Перейти куда-нибудь</a>
+                    <h5 class="card-title">UID: {{.ChrtID}}</h5>
+                    <a href="/api/v1/orders/{{.OrderUID}}" class="btn btn-primary ">Детально</a>
                 </div>
             </div>
         </div>
+        {{end}}
     </div>
 </div>
 <!-- Дополнительный JavaScript; выберите один из двух! -->

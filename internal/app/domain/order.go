@@ -26,7 +26,8 @@ type Order struct {
 type OrderService interface {
 	GetByUID(context.Context, string) (*Order, error)
 	StoreOrder(context.Context, *Order) (string, error)
-	LoadOrderCache(ctx context.Context) ([]*Order, error)
+	All(ctx context.Context) ([]*Order, error)
+	LoadOrderCache(ctx context.Context) error
 }
 
 type OrderRepository interface {

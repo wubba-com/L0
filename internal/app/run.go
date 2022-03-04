@@ -64,7 +64,7 @@ func Run() {
 	paymentSer := service2.NewPaymentService(paymentRepo, cacheLocal, TTL)
 	itemSer := service3.NewItemService(itemRepo, cacheLocal, TTL)
 
-	_, err = orderSer.LoadOrderCache(context.Background())
+	err = orderSer.LoadOrderCache(context.Background())
 	if err != nil {
 		log.Printf("err run load cache: %s", err.Error())
 		return
