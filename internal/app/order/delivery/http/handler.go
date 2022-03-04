@@ -34,7 +34,7 @@ func (h *handlerOrder) Register(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/orders", func(r chi.Router) {
 				r.Get("/", h.list)
-				r.Get("/{order_uid:[a-z0-9]}", h.get)
+				r.Get("/{order_uid}", h.get)
 			})
 		})
 	})
@@ -57,7 +57,9 @@ func (h *handlerOrder) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.Execute(w, orders)
+	view := &ViewOrder{orders}
+
+	err = tmpl.Execute(w, view)
 	if err != nil {
 		log.Printf("err http handler:%s\n", err.Error())
 		return
@@ -88,6 +90,10 @@ func (h *handlerOrder) get(w http.ResponseWriter, r *http.Request) {
 		log.Printf("err http handler:%s\n", err.Error())
 		return
 	}
+}
+
+type ViewOrder struct {
+	Orders []*domain.Order
 }
 
 func view(name string) string {

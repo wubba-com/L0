@@ -42,7 +42,6 @@ func (h *handler) StoreOrder(msg *stan.Msg) {
 	order.Delivery.OrderUID = order.OrderUID
 
 	for _, item := range order.Items {
-		fmt.Println(item.ChrtID)
 		item.OrderUID = order.OrderUID
 	}
 
