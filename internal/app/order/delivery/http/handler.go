@@ -57,7 +57,7 @@ func (h *handlerOrder) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	view := &ViewOrder{orders}
+	view := &ViewOrder{Len: len(orders), Orders: orders}
 
 	err = tmpl.Execute(w, view)
 	if err != nil {
@@ -93,6 +93,7 @@ func (h *handlerOrder) get(w http.ResponseWriter, r *http.Request) {
 }
 
 type ViewOrder struct {
+	Len    int
 	Orders []*domain.Order
 }
 
